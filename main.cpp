@@ -16,25 +16,29 @@ using namespace std;
 5) Outputs the modified file as an html file.
 */
 //Found this validation example: https://regex101.com/r/9J5JPW/1
-//I promoise I can explain it
-string regexPhrase = "^([a-z]:)?(?:[\\]?(?:[\w !#()-]+|[.]{1,2})+)*[\\])??:[.]?[\w !#()-]+)+)?[.]?$";
+string regexPhrase = R"(^[a-zA-Z]:\\(?:[\w\s\-\(\)#]+\\)*[\w\s\-\(\)#]+\.(cpp|html)$)";
 struct errorMsg {
-    std::string message;
+    string message;
 };
 
 bool validateFile(string file, string& errorMsgStr) {
     //Validates file passed in with error message pointer
     //changes error message based on error to send back to getFile
+    regex filePattern(regexPhrase);
+
+    if (!regex_match(file, filePattern)) {
+        errorMsgStr = "File name or path is invalid.";
+        return false;
+    }
 
     ifstream in(file);
 
     if (!in.is_open()) {
         errorMsgStr = "Entered file does not exist or failed to open";
         return false;
-    } else {
-        in.close();
-        return true;
     }
+    in.close();
+    return true;
 }
 
 string getFile() {
@@ -55,30 +59,42 @@ string getFile() {
     } while (true);
 }
 
-void convertFile(const std::string& inputFile, const std::string& outputFile ) {
-    //Reads the file from getFile if valid and outputs html file with desired formatting
+void convertFile(const string& inputFile, const string& outputFile) {
     try {
+        ifstream inStream(inputFile);
+        if (!inStream.is_open()) {
+            throw errorMsg{"Failed to open input file."};
+        }
 
+        ofstream outStream(outputFile);
+        if (!outStream.is_open()) {
+            throw errorMsg{"Failed to open output file."};
+        }
+
+        outStream << "<PRE>\n";
+        string line;
+        while (getline(inStream, line)) {
+            for (char c : line) {
+                if (c == '<') outStream << "&lt;";
+                else if (c == '>') outStream << "&gt;";
+                else outStream << c;
+            }
+            outStream << "\n";
+        }
+        outStream << "</PRE>\n";
+
+        inStream.close();
+        outStream.close();
     }
-    catch (const std::ios_base::failure& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-    catch (const std::exception& e) {
-        cerr << "Error: " << e.what() << std::endl;
+    catch (const ios_base::failure& e) {
+        cerr << "Library exception: " << e.what() << endl;
     }
     catch (const errorMsg& e) {
-        cerr << "Error: " << e.message << endl;
+        cerr << "Programmer exception: " << e.message << endl;
     }
-
-        for(char i : inputFile)
-        {
-            string fileChar = string(1,i);
-            if(fileChar == "<")
-                cout << "write &lt to output file" << endl;
-            else
-                cout << "write fileChar to output file" << endl;
-        }
-    cout << "write a carriage return for last line copied" << endl;
+    catch (const std::exception& e) {
+        cerr << "Default exception: " << e.what() << endl;
+    }
 }
 
 int main() {
