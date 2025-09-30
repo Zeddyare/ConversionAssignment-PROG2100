@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <regex>
+#include <fstream>
+#include <exception>
 
 
 using namespace std;
@@ -12,31 +15,41 @@ using namespace std;
 4) Inserts the <PRE> and </PRE> tags to the front and end of the html file respectively.
 5) Outputs the modified file as an html file.
 */
-
-
+//Found this validation example: https://regex101.com/r/9J5JPW/1
+//I promoise I can explain it
+string regexPhrase = "^([a-z]:)?(?:[\\]?(?:[\w !#()-]+|[.]{1,2})+)*[\\])??:[.]?[\w !#()-]+)+)?[.]?$";
 struct errorMsg {
     std::string message;
 };
 
-bool validateFile(string file, string& errorMsg) {
+bool validateFile(string file, string& errorMsgStr) {
     //Validates file passed in with error message pointer
     //changes error message based on error to send back to getFile
 
+    ifstream in(file);
+
+    if (!in.is_open()) {
+        errorMsgStr = "Entered file does not exist or failed to open";
+        return false;
+    } else {
+        in.close();
+        return true;
+    }
 }
 
 string getFile() {
     //Gets the file from console, outputs mutable error message if invalid
     string fileName;
-    string errorMsg;
+    string errorMsgStr;
     do {
-        cout << "Enter file name with absolute path: " << endl;
+        cout << "Enter file name with path: " << endl;
         getline(cin, fileName);
 
-        if (validateFile(fileName, errorMsg)) {
+        if (validateFile(fileName, errorMsgStr)) {
             return fileName;
         }
         else {
-            cout << "Error: " + errorMsg <<endl;
+            cout << "Error: " + errorMsgStr <<endl;
         }
 
     } while (true);
@@ -50,7 +63,12 @@ void convertFile(const std::string& inputFile, const std::string& outputFile ) {
     catch (const std::ios_base::failure& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-    catch (const std::)
+    catch (const std::exception& e) {
+        cerr << "Error: " << e.what() << std::endl;
+    }
+    catch (const errorMsg& e) {
+        cerr << "Error: " << e.message << endl;
+    }
 
         for(char i : inputFile)
         {
