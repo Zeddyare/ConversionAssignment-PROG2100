@@ -17,6 +17,7 @@ using namespace std;
 */
 //Found this validation example: https://regex101.com/r/9J5JPW/1
 string regexPhrase = R"(^[a-zA-Z]:\\(?:[\w\s\-\(\)#]+\\)*[\w\s\-\(\)#]+\.(cpp|html)$)";
+//String literal (R) so the slashes do not get treated as delimiters
 struct errorMsg {
     string message;
 };
@@ -46,7 +47,6 @@ string getFile() {
     string fileName;
     string errorMsgStr;
     do {
-        cout << "Enter file name with path: " << endl;
         getline(cin, fileName);
 
         if (validateFile(fileName, errorMsgStr)) {
@@ -54,6 +54,7 @@ string getFile() {
         }
         else {
             cout << "Error: " + errorMsgStr <<endl;
+            cout << "Please try again: " << endl;
         }
 
     } while (true);
@@ -92,7 +93,7 @@ void convertFile(const string& inputFile, const string& outputFile) {
     catch (const errorMsg& e) {
         cerr << "Programmer exception: " << e.message << endl;
     }
-    catch (const std::exception& e) {
+    catch (const exception& e) {
         cerr << "Default exception: " << e.what() << endl;
     }
 }
@@ -100,12 +101,14 @@ void convertFile(const string& inputFile, const string& outputFile) {
 int main() {
     cout << "Welcome to the File Converter!\n" << endl;
 
-    cout << "\n.cpp file for input:" << endl;
+    cout << "\nEnter file path and name of .cpp file for input:" << endl;
     string cppFile = getFile();
-    cout << "\n.html file for output: " << endl;
+    cout << "\nEnter file path and name of .html file for output: " << endl;
     string htmlFile = getFile();
 
     convertFile(cppFile, htmlFile);
+
+    cout << "\nProgram executed successfully." << endl;
 
     return 0;
 }//end method
